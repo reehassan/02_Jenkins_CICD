@@ -1,143 +1,270 @@
-Simple CI/CD Pipeline with Jenkins
-This project demonstrates automating a CI/CD pipeline using Jenkins to lint, test, build, and deploy a Node.js REST API to AWS Elastic Beanstalk.
-Prerequisites
-
-Node.js: Version 20 (LTS).
-Docker: Installed on the Jenkins server.
-Docker Hub Account: For storing Docker images.
-AWS Account: With Elastic Beanstalk access.
-GitHub Account: For hosting the repository.
-Jenkins: Installed and configured with Docker and AWS CLI plugins.
-EB CLI: Installed on the Jenkins server for Elastic Beanstalk deployment.
-
-Setup Instructions
-1. Create GitHub Repository
-
-Go to GitHub and create a new repository named simple-cicd-node-app.
-Clone the repository locally:git clone https://github.com/YOUR_USERNAME/simple-cicd-node-app.git
-cd simple-cicd-node-app
 
 
-Copy the project files into the repository, commit, and push:git add .
-git commit -m "Initial commit with CI/CD pipeline"
-git push origin main
+# 🚀 Simple CI/CD Pipeline with Jenkins
 
+This project automates a CI/CD pipeline using **Jenkins** to lint, test, build, and deploy a Node.js REST API to **AWS Elastic Beanstalk** using Docker.
 
+---
 
-2. Set Up Docker Hub
+## 📦 Prerequisites
 
-Create a Docker Hub account at Docker Hub.
-Generate an access token in Docker Hub under Account Settings > Security.
-In Jenkins, go to Manage Jenkins > Manage Plugins and install the Docker plugin.
-Add Docker Hub credentials in Jenkins:
-Go to Manage Jenkins > Manage Credentials.
-Add a new credential with ID dockerhub-credentials, username (Docker Hub username), and password (access token).
+* **Node.js**: Version `20.x`
+* **Docker**: Installed and configured on the Jenkins server
+* **Docker Hub Account**: Username `neebahassan`
+* **AWS Account**: With Elastic Beanstalk access
+* **GitHub Repo**: [https://github.com/reehassan/02\_Jenkins\_CICD](https://github.com/reehassan/02_Jenkins_CICD)
+* **Jenkins**: With required plugins installed
+* **AWS EB CLI**: Installed on the Jenkins host
 
+---
 
+## 🔧 Setup Instructions
 
-3. Set Up AWS Elastic Beanstalk
+### 1️⃣ Clone the Repository
 
-Log in to the AWS Management Console.
-Navigate to Elastic Beanstalk and create a new application:
-Application name: simple-cicd-node-app.
-Environment name: SimpleCicdNodeApp-env.
-Platform: Docker.
-Use default settings for simplicity.
+```bash
+git clone https://github.com/reehassan/02_Jenkins_CICD.git
+cd 02_Jenkins_CICD
+```
 
+Ensure these files are present:
+`.gitignore`, `Dockerfile`, `Dockerrun.aws.json`, `Jenkinsfile`, `README.md`, `package.json`, `package-lock.json`, `index.js`, `tests/index.test.js`
 
-Create an IAM user with Elastic Beanstalk permissions:
-Go to IAM > Users > Create User.
-Attach the AWSElasticBeanstalkFullAccess policy.
-Generate access keys for the user.
+---
 
+### 2️⃣ Set Up Docker Hub
 
-In Jenkins, add AWS credentials:
-Go to Manage Jenkins > Manage Credentials.
-Add credentials with ID aws-access-key-id (access key) and aws-secret-access-key (secret key).
+1. Log in to Docker Hub as `neebahassan`
+2. Generate an **access token**:
+   *Account Settings → Security → Access Tokens*
+3. Add credentials in Jenkins:
+   `Manage Jenkins → Manage Credentials → (global) → Add Credentials`
 
+   * Kind: `Username with password`
+   * ID: `dockerhub-credentials`
+   * Username: `neebahassan`
+   * Password: your access token
 
+---
 
-4. Set Up Jenkins
+### 3️⃣ Set Up AWS Elastic Beanstalk
 
-Install Jenkins on a server (e.g., Ubuntu):sudo apt update
-sudo apt install openjdk-11-jdk -y
+1. **Create an Elastic Beanstalk Application**:
+
+   * App Name: `simple-cicd-node-app`
+   * Env Name: `SimpleCicdNodeApp-env`
+   * Platform: `Docker`
+
+2. **Create IAM User**:
+
+   * Go to IAM → Users → Create user (e.g., `jenkins-eb-user`)
+   * Attach policy: `AdministratorAccess-AWSElasticBeanstalk`
+   * Generate **Access Key ID** and **Secret**
+
+3. **Add AWS Credentials to Jenkins**:
+
+   * Kind: `AWS Credentials`
+   * ID: `aws-eb-credentials`
+   * Access Key ID / Secret from step above
+
+---
+
+### 4️⃣ Install and Configure Jenkins
+
+#### 🔹 Install Jenkins on Debian
+
+```bash
+sudo apt update
+sudo apt install -y openjdk-11-jdk
 curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
 echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list
 sudo apt update
-sudo apt install jenkins -y
+sudo apt install -y jenkins
 sudo systemctl start jenkins
+sudo systemctl enable jenkins
+```
 
+#### 🔹 Unlock Jenkins
 
-Access Jenkins at http://YOUR_SERVER_IP:8080 and complete the setup.
-Install required plugins: Docker, Docker Pipeline, AWS CLI.
-Install EB CLI on the Jenkins server:pip install awsebcli
+```bash
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+```
 
+#### 🔹 Install Required Plugins
 
-Configure a Jenkins pipeline:
-Create a new pipeline job in Jenkins.
-Set the pipeline to use the Jenkinsfile from the GitHub repository.
-Configure the GitHub webhook to trigger builds on push:
-In GitHub, go to Settings > Webhooks > Add webhook.
-Set Payload URL to http://YOUR_JENKINS_URL/github-webhook/.
-Select application/json and enable Push events.
+* Docker
+* Docker Pipeline
+* Pipeline: AWS Steps
 
+---
 
+### 5️⃣ Install Node.js 20 with NVM
 
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+source "$NVM_DIR/nvm.sh"
+nvm install 20
+nvm use 20
+nvm alias default 20
+```
 
+#### Configure for Jenkins User:
 
-5. Project Structure
+```bash
+sudo -u jenkins bash -c 'echo "export NVM_DIR=\"$HOME/.nvm\"" >> ~/.bashrc'
+sudo -u jenkins bash -c 'echo "[ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"" >> ~/.bashrc'
+sudo -u jenkins bash -c 'echo "nvm use default" >> ~/.bashrc'
+```
 
-.gitignore: Ignores node_modules and other unnecessary files.
-Dockerfile: Builds the Docker image for the app.
-Dockerrun.aws.json: Configures Elastic Beanstalk for Docker deployment.
-Jenkinsfile: Defines the Jenkins CI/CD pipeline.
-README.md: Documents the project and setup.
-package.json: Node.js dependencies and scripts.
-index.js: Node.js Express REST API with /hello endpoint.
-.eslintrc.json: ESLint configuration.
-tests/index.test.js: Jest tests for the /hello endpoint.
+---
 
-6. Run Locally
+### 6️⃣ Install AWS EB CLI & Docker
 
-Install dependencies:npm install
+```bash
+sudo apt install -y docker.io
+sudo usermod -aG docker jenkins
+python3 -m venv ~/.venvs/ebcli
+source ~/.venvs/ebcli/bin/activate
+pip install awsebcli
+sudo systemctl restart jenkins
+```
 
+#### Verify Installations:
 
-Run linting:npm run lint
+```bash
+node --version      # v20.x.x
+npm --version
+docker --version
+~/.venvs/ebcli/bin/eb --version
+```
 
+---
 
-Run tests:npm test
+### 7️⃣ Configure Jenkins Pipeline
 
+1. Go to: **Jenkins Dashboard → New Item**
+2. Name: `simple-cicd-node-app`
+3. Type: `Pipeline`
+4. Pipeline config:
 
-Start the app:npm start
+   * Definition: `Pipeline script from SCM`
+   * SCM: `Git`
+   * Repo URL: `https://github.com/reehassan/02_Jenkins_CICD.git`
+   * Branch: `main`
+   * Script Path: `Jenkinsfile`
 
+---
 
-Access http://localhost:3000/hello to see {"message": "Hello, World!"}.
+### 8️⃣ Add GitHub Webhook (Optional)
 
-CI/CD Pipeline
-The Jenkins pipeline (Jenkinsfile) runs on push to the main branch and:
+1. GitHub → `Repo → Settings → Webhooks → Add Webhook`
+2. Payload URL: `http://<your-jenkins-host>:8080/github-webhook/`
+3. Content type: `application/json`
+4. Trigger: Just the push event
 
-Checks out the code from GitHub.
-Installs Node.js dependencies.
-Runs ESLint for code quality.
-Runs Jest tests.
-Builds and pushes the Docker image to Docker Hub.
-Deploys to AWS Elastic Beanstalk using EB CLI.
+---
 
-Pipeline Execution Time: Approximately 2-3 minutes (depending on network and AWS).
+### 9️⃣ Test Locally
 
-Troubleshooting
+```bash
+cd 02_Jenkins_CICD
+npm install
+npm run lint
+npm test
+npm start
+```
 
-Linting Errors: Fix ESLint issues with npm run lint -- --fix.
-Test Failures: Ensure tests pass locally with npm test.
-Docker Push Fails: Verify Docker Hub credentials in Jenkins.
-AWS Deployment Fails: Check AWS credentials and Elastic Beanstalk environment status.
-Jenkins Build Fails: Ensure Docker and EB CLI are installed on the Jenkins server.
+Visit: [http://localhost:3000/hello](http://localhost:3000/hello) → `{"message": "Hello, World!"}`
 
-Achievements
+---
 
-Automated CI/CD pipeline with under 3-minute execution.
-Deployed a Node.js app to AWS Elastic Beanstalk with zero manual intervention.
-Integrated linting (ESLint) and testing (Jest) into the pipeline.
+### 🔟 Run the CI/CD Pipeline
 
-Why This Helps
-This project introduces CI/CD concepts with Jenkins, preparing you for advanced pipelines like ArgoCD or Tekton, and simplifies AWS deployment with Elastic Beanstalk.
+```bash
+git add .
+git commit -m "Trigger pipeline"
+git push origin main
+```
+
+Check Jenkins job console output:
+
+* ✅ Checkout
+* ✅ Install Dependencies
+* ✅ Lint
+* ✅ Test
+* ✅ Build Docker Image
+* ✅ Push to Docker Hub
+* ✅ Deploy to Elastic Beanstalk
+
+Visit:
+`http://<ElasticBeanstalk-URL>/hello`
+
+---
+
+## 📁 Project Structure
+
+```
+.
+├── .gitignore
+├── Dockerfile
+├── Dockerrun.aws.json
+├── Jenkinsfile
+├── README.md
+├── index.js
+├── package.json
+├── package-lock.json
+└── tests/
+    └── index.test.js
+```
+
+---
+
+## 🔄 CI/CD Pipeline Flow
+
+The Jenkins pipeline performs the following:
+
+1. **Checkout** source code from GitHub
+2. **Install** dependencies with npm
+3. **Lint** code using ESLint
+4. **Run** tests using Jest
+5. **Build** Docker image
+6. **Push** image to Docker Hub
+7. **Deploy** to AWS Elastic Beanstalk via EB CLI
+
+⏱️ **Total Execution Time:** \~2–3 minutes
+
+---
+
+## 🛠️ Troubleshooting
+
+| Issue                     | Solution                                        |
+| ------------------------- | ----------------------------------------------- |
+| Node not found            | Use NVM for Jenkins + set it in `.bashrc`       |
+| Linting fails             | Run `npm run lint -- --fix`                     |
+| Tests fail                | Ensure server is closed in tests                |
+| Docker push fails         | Check Docker credentials in Jenkins             |
+| EB CLI not found          | Activate venv or install globally               |
+| Jenkins permission errors | Check `jenkins` user has Docker and node access |
+
+---
+
+## 🏆 Achievements
+
+* ✅ End-to-end CI/CD automation using Jenkins
+* ✅ Zero-click deployment to AWS Elastic Beanstalk
+* ✅ Built with ESLint, Jest, Docker, and GitHub integration
+* ✅ Pipeline execution in under 3 minutes
+
+---
+
+## 💡 Why This Matters
+
+This project gives you real-world exposure to:
+
+* Jenkins pipelines
+* AWS Beanstalk deployments
+* CI/CD best practices
+* Dockerized Node.js workflows
+
+Perfect prep for advanced tools like GitHub Actions, ArgoCD, or Tekton.
