@@ -1,0 +1,15 @@
+{
+  "env": {
+    "node": true, // Enable Node.js globals
+    "jest": true // Enable Jest globals
+  },
+  "extends": "eslint:recommended", // Use recommended ESLint rules
+  "parserOptions": {
+    "ecmaVersion": 12 // Support modern JavaScript
+  },
+  "rules": {
+    "indent": ["error", 2], // Enforce 2-space indentation
+    "quotes": ["error", "single"], // Enforce single quotes
+    "semi": ["error", "always"] // Enforce semicolons
+  }
+}

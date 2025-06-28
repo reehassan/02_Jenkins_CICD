@@ -1,0 +1,21 @@
+{
+  "name": "simple-cicd-node-app",
+  "version": "1.0.0",
+  "description": "A simple Node.js REST API for CI/CD pipeline with Jenkins",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest", 
+    "lint": "eslint ." 
+  },
+  "dependencies": {
+    "express": "^4.18.2" 
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0", 
+    "supertest": "^6.3.4"
+  },
+  "author": "",
+  "license": "ISC"
+}
