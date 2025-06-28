@@ -1,15 +1,19 @@
-// Import supertest for HTTP testing
 const request = require('supertest');
-// Import the Express app
 const app = require('../index');
+let server;
+
+beforeAll((done) => {
+  server = app.listen(0, () => done()); // Start server on random port
+});
+
+afterAll((done) => {
+  server.close(done); // Close server after tests
+});
 
 describe('GET /hello', () => {
   it('should return 200 and Hello, World!', async () => {
-    // Send GET request to /hello
     const res = await request(app).get('/hello');
-    // Check status code
     expect(res.status).toBe(200);
-    // Check response body
     expect(res.body).toEqual({ message: 'Hello, World!' });
   });
 });
