@@ -43,7 +43,7 @@ pipeline {
     stage('Build Docker Image') {
       steps {
         // Build Docker image
-        sh "docker build -t ${DOCKER_IMAGE} ."
+        sh "docker build -t ${env.DOCKER_IMAGE} ."
       }
     }
 
@@ -51,7 +51,7 @@ pipeline {
       steps {
         // Log in to Docker Hub and push image
         sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-        sh "docker push ${DOCKER_IMAGE}"
+        sh "docker push ${env.DOCKER_IMAGE}"
       }
     }
 
@@ -67,8 +67,10 @@ pipeline {
 
   post {
     always {
-      // Clean up Docker images
-      sh "docker rmi ${DOCKER_IMAGE} || true"
+      script {
+        // Clean up Docker images using env to access DOCKER_IMAGE
+        sh "docker rmi ${env.DOCKER_IMAGE} || true"
+      }
     }
     success {
       echo 'Pipeline completed successfully!'
