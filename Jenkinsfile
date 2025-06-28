@@ -8,14 +8,14 @@ pipeline {
     AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
     AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
     // Docker image name
-    DOCKER_IMAGE = "DOCKERHUB_USERNAME/simple-cicd-node-app:latest"
+    DOCKER_IMAGE = "neebahassan/02_jenkins_cicd:latest"
   }
 
   stages {
     stage('Checkout') {
       steps {
         // Checkout code from GitHub
-        git branch: 'main', url: 'https://github.com/YOUR_USERNAME/simple-cicd-node-app.git'
+        git branch: 'main', url: 'https://github.com/reehassan/02_Jenkins_CICD.git'
       }
     }
 
