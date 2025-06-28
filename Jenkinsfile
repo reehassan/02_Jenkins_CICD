@@ -35,14 +35,14 @@ pipeline {
 
     stage('Build Docker Image') {
       steps {
-        sh "docker build -t ${env.DOCKER_IMAGE} ."
+        sh "docker build -t ${DOCKER_IMAGE} ."
       }
     }
 
     stage('Push Docker Image') {
       steps {
         sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-        sh "docker push ${env.DOCKER_IMAGE}"
+        sh "docker push ${DOCKER_IMAGE}"
       }
     }
 
@@ -57,17 +57,15 @@ pipeline {
 
   post {
     always {
-      node {
-        script {
-          sh "docker rmi ${env.DOCKER_IMAGE} || true"
-        }
-      }
+      // DO NOT use 'node' here in declarative
+      echo 'Cleaning up Docker image...'
+      sh "docker rmi ${DOCKER_IMAGE} || true"
     }
     success {
-      echo 'Pipeline completed successfully!'
+      echo '✅ Pipeline completed successfully!'
     }
     failure {
-      echo 'Pipeline failed!'
+      echo '❌ Pipeline failed!'
     }
   }
 }
