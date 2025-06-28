@@ -67,9 +67,11 @@ pipeline {
 
   post {
     always {
-      script {
-        // Clean up Docker images using env to access DOCKER_IMAGE
-        sh "docker rmi ${env.DOCKER_IMAGE} || true"
+      node {
+        script {
+          // Clean up Docker images using env to access DOCKER_IMAGE
+          sh "docker rmi ${env.DOCKER_IMAGE} || true"
+        }
       }
     }
     success {
